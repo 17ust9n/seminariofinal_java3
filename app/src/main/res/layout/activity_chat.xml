@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -25,14 +26,16 @@
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:text="Nombre Usuario" />
 
             <TextView
                 android:id="@+id/tvChSub"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                tools:text="En línea" />
         </LinearLayout>
 
         <!-- Botones de Llamada en el Header -->
@@ -47,6 +50,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Iniciar llamada de voz"
                 android:src="@drawable/ic_call"
                 app:tint="@android:color/white" />
 
@@ -55,6 +59,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Iniciar videollamada"
                 android:src="@drawable/ic_videocam"
                 app:tint="@android:color/white" />
         </LinearLayout>
@@ -86,6 +91,7 @@
             android:layout_weight="1"
             android:background="@drawable/bg_input_field"
             android:hint="Mensaje cifrado…"
+            android:inputType="textMultiLine"
             android:paddingHorizontal="16dp" />
 
         <ImageButton
@@ -93,6 +99,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Grabar mensaje de voz"
             android:src="@drawable/ic_mic" />
 
         <ImageButton
@@ -100,6 +107,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Enviar mensaje"
             android:src="@drawable/ic_send"
             android:visibility="gone" />
     </LinearLayout>
