@@ -2,6 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- PERMISOS DE RED (Para WebSockets/MQTT y envío de datos) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- PERMISOS DE LLAMADAS Y MULTIMEDIA (Para micrófono, cámara y llamadas) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!-- PERMISO DE CONTACTOS (Para la agenda en NewChatActivity) -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,15 +23,45 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SeminarioFinal">
+
+        <!-- 1. PANTALLA INICIAL: Onboarding (Login y Modo de Seguridad) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".OnboardingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 2. PANTALLA PRINCIPAL: Lista de Chats e Inicio -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <!-- 3. PERFIL DE USUARIO -->
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- 4. NUEVO CHAT (Contactos y Grupos) -->
+        <activity
+            android:name=".NewChatActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- 5. CHAT / CONVERSACIÓN -->
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- 6. LLAMADAS DE VOZ Y VIDEO -->
+        <activity
+            android:name=".CallActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

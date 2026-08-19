@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".OnboardingActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- Logo Grande (biglogo) -->
+        <ImageView
+            android:id="@+id/imgBigLogo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="32dp"
+            android:contentDescription="Starssenger Logo"
+            android:src="@drawable/logo_starssenger" />
+
+        <!-- Eslogan Cifrado -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="Mensajería cifrada extremo a extremo. La clave sale de los números — no viaja. Solo viaja el mensaje cifrado."
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp" />
+
+        <!-- Label Teléfono -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Tu número (con código de país)"
+            android:textColor="@android:color/black"
+            android:textStyle="bold" />
+
+        <!-- Input Teléfono (me) -->
+        <EditText
+            android:id="@+id/etPhone"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input_field"
+            android:hint="5491137824591"
+            android:inputType="number"
+            android:paddingHorizontal="16dp" />
+
+        <!-- Label Seguridad -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Seguridad"
+            android:textColor="@android:color/black"
+            android:textStyle="bold" />
+
+        <!-- Botones Nivel Seguridad (Normal / Blindado) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnSecNormal"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="🔓 Normal" />
+
+            <Button
+                android:id="@+id/btnSecBlindado"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="🛡️ Blindado" />
+        </LinearLayout>
+
+        <!-- Descripción Modo Blindado -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="🛡️ Blindado: los mensajes se borran solos a los 45s y no se guarda nada en el teléfono. Menos rastro para un spyware."
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp" />
+
+        <!-- Botón Entrar (saveMe) -->
+        <Button
+            android:id="@+id/btnEnter"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="28dp"
+            android:text="Entrar" />
+
+        <!-- Mensaje de Error (oerr) -->
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:textColor="#EE2288"
+            android:textSize="14sp"
+            android:visibility="gone"
+            tools:text="Número no válido"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+</ScrollView>
