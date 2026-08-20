@@ -20,7 +20,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:contentDescription="Starssenger Logo"
-            android:src="@drawable/logo_starssenger" />
+            android:src="@drawable/starssenger" />
 
         <TextView
             android:id="@+id/txtBrand"

@@ -17,6 +17,7 @@
         android:id="@+id/etCName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:layout_marginTop="16dp"
         android:hint="Nombre del contacto"
         android:inputType="textPersonName" />
@@ -25,7 +26,8 @@
         android:id="@+id/etCNum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:minHeight="48dp"
+        android:layout_marginTop="48dp"
         android:hint="Número o usuario"
         android:inputType="phone" />
 

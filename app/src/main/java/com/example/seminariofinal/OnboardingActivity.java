@@ -42,12 +42,22 @@ public class OnboardingActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // Eventos para cambiar el modo de seguridad (setSec)
+        // Eventos para cambiar el modo de seguridad
         btnSecNormal.setOnClickListener(v -> setSec(0));
         btnSecBlindado.setOnClickListener(v -> setSec(1));
 
-        // Evento para guardar e ingresar (saveMe)
+        // Evento al presionar el botón "Entrar"
         btnEnter.setOnClickListener(v -> saveMe());
+
+        // Evento al presionar Enter/Hecho en el teclado del celular
+        etPhone.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                    actionId == android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED) {
+                saveMe();
+                return true;
+            }
+            return false;
+        });
     }
 
     // Equivalente a setSec(sec) en tu JS

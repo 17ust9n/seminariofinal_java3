@@ -18,6 +18,7 @@
         android:id="@+id/etInviteUser"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:layout_marginTop="16dp"
         android:hint="ID o Email del usuario"
         android:inputType="text" />

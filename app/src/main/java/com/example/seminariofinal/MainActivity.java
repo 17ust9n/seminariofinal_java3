@@ -1,6 +1,8 @@
 package com.example.seminariofinal;
 
 import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,15 +27,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        // 1. Control de Onboarding / Autenticación local (equivalente a "if (!ME)")
+        // Leer el estado de la sesión desde SharedPreferences
+        SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
+        isUserLoggedIn = preferences.getBoolean("is_logged_in", false);
+
+        // 1. Control de Onboarding
         if (!isUserLoggedIn) {
             showOnboarding();
             return;
         }
 
-        // Enlazar las vistas declaradas en el XML
+        setContentView(R.layout.activity_main);
+
+        // Enlazar las vistas
         initViews();
 
         // 2. Reconstruir conversaciones e iniciar red
