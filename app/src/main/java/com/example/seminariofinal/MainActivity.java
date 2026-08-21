@@ -1,38 +1,42 @@
 package com.example.seminariofinal;
 
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Componentes de la vista
     private EditText etSearch;
     private RecyclerView rvChatList;
     private FloatingActionButton fabNewChat;
     private BottomNavigationView bottomNavigation;
 
-    // Simulación de variables globales de tu script
-    private boolean isUserLoggedIn = false; // Corresponde a `ME`
-    private boolean isClientConnected = false; // Corresponde a `client`
+    private boolean isUserLoggedIn = false;
+    private boolean isClientConnected = false;
+    private List<Contact> contactList = new ArrayList<>();
+    private ContactAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Leer el estado de la sesión desde SharedPreferences
         SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
         isUserLoggedIn = preferences.getBoolean("is_logged_in", false);
 
-        // 1. Control de Onboarding
         if (!isUserLoggedIn) {
             showOnboarding();
             return;
@@ -40,20 +44,22 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // Enlazar las vistas
         initViews();
 
-        // 2. Reconstruir conversaciones e iniciar red
-        rebuildConvs();
         if (!isClientConnected) {
             startNet();
         } else {
             subscribeToTopics();
         }
 
-        // 3. Renderizar interfaz y listeners
-        renderList("");
         setupListeners();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        rebuildConvs();
+        renderList(etSearch.getText().toString());
     }
 
     private void initViews() {
@@ -61,27 +67,25 @@ public class MainActivity extends AppCompatActivity {
         rvChatList = findViewById(R.id.rvChatList);
         fabNewChat = findViewById(R.id.fabNewChat);
         bottomNavigation = findViewById(R.id.bottomNavigation);
+
+        rvChatList.setLayoutManager(new LinearLayoutManager(this));
+
+        // 'false' desactiva los botones de editar y eliminar en MainActivity
+        adapter = new ContactAdapter(new ArrayList<>(), false, null);
+        rvChatList.setAdapter(adapter);
     }
 
     private void setupListeners() {
-        // Evento para el buscador ("oninput="renderList()")
         etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 renderList(s.toString());
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Evento para "Nuevo Chat" (onclick="openNewChat()")
         fabNewChat.setOnClickListener(v -> openNewChat());
 
-        // Eventos para la navegación inferior (tabs)
         bottomNavigation.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
@@ -96,38 +100,48 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showOnboarding() {
-        // Redirigir a la pantalla de Login u Onboarding
         Intent intent = new Intent(MainActivity.this, OnboardingActivity.class);
         startActivity(intent);
         finish();
     }
 
     private void rebuildConvs() {
-        // Reconstruir lista local desde la base de datos (p. ej. Room / SQLite)
-    }
+        SharedPreferences prefs = getSharedPreferences("starssenger_prefs", MODE_PRIVATE);
+        String json = prefs.getString("contacts_list", null);
 
-    private void startNet() {
-        // Iniciar cliente de conexión (WebSockets o MQTT)
-    }
-
-    private void subscribeToTopics() {
-        // Recorrer lista de tópicos/chats y suscribir el cliente
+        if (json != null) {
+            Gson gson = new Gson();
+            Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
+            contactList = gson.fromJson(json, type);
+        } else {
+            contactList = new ArrayList<>();
+        }
     }
 
     private void renderList(String query) {
-        // Filtrar datos y actualizar el Adapter del RecyclerView
+        List<Contact> filteredList = new ArrayList<>();
+        for (Contact c : contactList) {
+            if (c.getName().toLowerCase().contains(query.toLowerCase()) ||
+                    c.getPhone().contains(query)) {
+                filteredList.add(c);
+            }
+        }
+        if (adapter != null) {
+            adapter.updateList(filteredList);
+        }
     }
+
+    private void startNet() {}
+    private void subscribeToTopics() {}
 
     private void openNewChat() {
-        // Lanzar Activity para iniciar una conversación nueva
+        Intent intent = new Intent(MainActivity.this, NewChatActivity.class);
+        startActivity(intent);
     }
 
-    private void goHome() {
-        // Volver al inicio o hacer scroll arriba
-    }
+    private void goHome() {}
 
     private void openProfile() {
-        // Lanzar Activity de Perfil
         Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
         startActivity(intent);
     }

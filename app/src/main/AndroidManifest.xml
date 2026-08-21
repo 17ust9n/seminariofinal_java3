@@ -2,16 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- PERMISOS DE RED (Para WebSockets/MQTT y envío de datos) -->
+    <!-- PERMISOS DE RED -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- PERMISOS DE LLAMADAS Y MULTIMEDIA (Para micrófono, cámara y llamadas) -->
+    <!-- PERMISOS DE LLAMADAS Y MULTIMEDIA -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
-    <!-- PERMISO DE CONTACTOS (Para la agenda en NewChatActivity) -->
+    <!-- CARACTERÍSTICAS DE HARDWARE (Resuelve la advertencia) -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+    <!-- PERMISO DE CONTACTOS -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
@@ -24,7 +32,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SeminarioFinal">
 
-        <!-- 1. PANTALLA INICIAL: Onboarding (Login y Modo de Seguridad) -->
+        <!-- 1. PANTALLA INICIAL: Onboarding -->
         <activity
             android:name=".OnboardingActivity"
             android:exported="true">
@@ -34,7 +42,7 @@
             </intent-filter>
         </activity>
 
-        <!-- 2. PANTALLA PRINCIPAL: Lista de Chats e Inicio -->
+        <!-- 2. PANTALLA PRINCIPAL -->
         <activity
             android:name=".MainActivity"
             android:exported="false" />
@@ -45,7 +53,7 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
-        <!-- 4. NUEVO CHAT (Contactos y Grupos) -->
+        <!-- 4. NUEVO CHAT -->
         <activity
             android:name=".NewChatActivity"
             android:exported="false"
