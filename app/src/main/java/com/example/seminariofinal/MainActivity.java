@@ -70,8 +70,27 @@ public class MainActivity extends AppCompatActivity {
 
         rvChatList.setLayoutManager(new LinearLayoutManager(this));
 
-        // 'false' desactiva los botones de editar y eliminar en MainActivity
-        adapter = new ContactAdapter(new ArrayList<>(), false, null);
+        // 'false' desactiva la visibilidad de los botones de editar y eliminar
+        adapter = new ContactAdapter(new ArrayList<>(), false, new ContactAdapter.OnContactActionListener() {
+            @Override
+            public void onContactClick(Contact contact) {
+                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                intent.putExtra("contact_name", contact.getName());
+                intent.putExtra("contact_phone", contact.getPhone());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onEdit(Contact contact, int position) {
+                // No se utiliza en MainActivity
+            }
+
+            @Override
+            public void onDelete(Contact contact, int position) {
+                // No se utiliza en MainActivity
+            }
+        });
+
         rvChatList.setAdapter(adapter);
     }
 

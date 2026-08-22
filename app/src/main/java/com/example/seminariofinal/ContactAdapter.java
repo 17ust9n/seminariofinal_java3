@@ -12,13 +12,14 @@ import java.util.List;
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
 
     public interface OnContactActionListener {
+        void onContactClick(Contact contact); // Se añade el evento de clic principal
         void onEdit(Contact contact, int position);
         void onDelete(Contact contact, int position);
     }
 
     private List<Contact> contactList;
     private OnContactActionListener listener;
-    private boolean showActions; // Flag para controlar si se muestran los botones
+    private boolean showActions;
 
     public ContactAdapter(List<Contact> contactList, boolean showActions, OnContactActionListener listener) {
         this.contactList = contactList;
@@ -39,6 +40,13 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         holder.tvName.setText(contact.getName());
         holder.tvPhone.setText(contact.getPhone());
 
+        // Clic en la fila completa del contacto para abrir ChatActivity
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onContactClick(contact);
+            }
+        });
+
         if (showActions) {
             holder.btnEdit.setVisibility(View.VISIBLE);
             holder.btnDelete.setVisibility(View.VISIBLE);
@@ -51,7 +59,6 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                 if (listener != null) listener.onDelete(contact, position);
             });
         } else {
-            // Ocultar acciones en MainActivity
             holder.btnEdit.setVisibility(View.GONE);
             holder.btnDelete.setVisibility(View.GONE);
         }
@@ -59,7 +66,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
     @Override
     public int getItemCount() {
-        return contactList.size();
+        return contactList != null ? contactList.size() : 0;
     }
 
     public void updateList(List<Contact> newList) {

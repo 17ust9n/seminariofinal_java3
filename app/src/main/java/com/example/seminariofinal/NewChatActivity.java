@@ -1,6 +1,7 @@
 package com.example.seminariofinal;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -53,8 +54,15 @@ public class NewChatActivity extends AppCompatActivity {
 
         rvNcList.setLayoutManager(new LinearLayoutManager(this));
 
-        // 'true' activa los botones de editar y eliminar en NewChatActivity
         adapter = new ContactAdapter(new ArrayList<>(), true, new ContactAdapter.OnContactActionListener() {
+            @Override
+            public void onContactClick(Contact contact) {
+                Intent intent = new Intent(NewChatActivity.this, ChatActivity.class);
+                intent.putExtra("contact_name", contact.getName());
+                intent.putExtra("contact_phone", contact.getPhone());
+                startActivity(intent);
+            }
+
             @Override
             public void onEdit(Contact contact, int position) {
                 openEditContactModal(contact);
