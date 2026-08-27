@@ -1,42 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:background="@drawable/bg_input_dark"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="20dp">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Agregar Contacto"
-        android:textColor="@android:color/black"
+        android:text="Contacto"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold" />
 
     <EditText
         android:id="@+id/etCName"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
+        android:layout_height="48dp"
         android:layout_marginTop="16dp"
-        android:hint="Nombre del contacto"
-        android:inputType="textPersonName" />
+        android:background="@drawable/bg_input_dark"
+        android:hint="Nombre"
+        android:paddingHorizontal="12dp"
+        android:textColor="@color/white"
+        android:textColorHint="@color/mut_text" />
 
     <EditText
         android:id="@+id/etCNum"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:layout_marginTop="48dp"
-        android:hint="Número o usuario"
-        android:inputType="phone" />
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_input_dark"
+        android:hint="Número con código de país"
+        android:inputType="number"
+        android:paddingHorizontal="12dp"
+        android:textColor="@color/white"
+        android:textColorHint="@color/mut_text" />
 
     <TextView
         android:id="@+id/tvCErr"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textColor="@android:color/holo_red_dark"
+        android:textColor="@color/red_accent"
         android:textSize="12sp"
         android:visibility="gone" />
 
@@ -47,20 +55,21 @@
         android:gravity="end"
         android:orientation="horizontal">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancelContact"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancelar" />
+            android:text="Cancelar"
+            android:textColor="@color/mut_text" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveContact"
-            style="@style/Widget.Material3.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Guardar" />
+            android:text="Guardar"
+            android:textColor="@color/green_text"
+            app:backgroundTint="@color/green_accent" />
     </LinearLayout>
-
 </LinearLayout>

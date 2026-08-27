@@ -12,7 +12,7 @@ import java.util.List;
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
 
     public interface OnContactActionListener {
-        void onContactClick(Contact contact); // Se añade el evento de clic principal
+        void onContactClick(Contact contact);
         void onEdit(Contact contact, int position);
         void onDelete(Contact contact, int position);
     }
@@ -40,7 +40,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         holder.tvName.setText(contact.getName());
         holder.tvPhone.setText(contact.getPhone());
 
-        // Clic en la fila completa del contacto para abrir ChatActivity
+        if (contact.getName() != null && !contact.getName().isEmpty()) {
+            holder.tvAvatar.setText(contact.getName().substring(0, 1).toUpperCase());
+        } else {
+            holder.tvAvatar.setText("#");
+        }
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onContactClick(contact);
@@ -75,13 +80,14 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     }
 
     static class ContactViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvPhone;
+        TextView tvName, tvPhone, tvAvatar;
         ImageView btnEdit, btnDelete;
 
         public ContactViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvContactName);
             tvPhone = itemView.findViewById(R.id.tvContactPhone);
+            tvAvatar = itemView.findViewById(R.id.tvAvatar);
             btnEdit = itemView.findViewById(R.id.btnEditContact);
             btnDelete = itemView.findViewById(R.id.btnDeleteContact);
         }

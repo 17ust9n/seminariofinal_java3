@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="purple_500">#6200EE</color>
+    <color name="navy">#0B1F33</color>
+    <color name="navy2">#12314E</color>
+    <color name="navy_input">#0E263B</color>
+    <color name="green_accent">#21C36F</color>
+    <color name="green_text">#04240F</color>
+    <color name="mut_text">#8AA0B3</color>
+    <color name="line_border">#24455F</color>
+    <color name="red_accent">#C0392B</color>
+    <color name="white">#EAF2F8</color>
 </resources>

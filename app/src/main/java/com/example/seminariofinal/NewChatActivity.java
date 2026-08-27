@@ -1,13 +1,18 @@
 package com.example.seminariofinal;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -57,6 +62,7 @@ public class NewChatActivity extends AppCompatActivity {
         adapter = new ContactAdapter(new ArrayList<>(), true, new ContactAdapter.OnContactActionListener() {
             @Override
             public void onContactClick(Contact contact) {
+                hideKeyboard();
                 Intent intent = new Intent(NewChatActivity.this, ChatActivity.class);
                 intent.putExtra("contact_name", contact.getName());
                 intent.putExtra("contact_phone", contact.getPhone());
@@ -65,11 +71,13 @@ public class NewChatActivity extends AppCompatActivity {
 
             @Override
             public void onEdit(Contact contact, int position) {
+                hideKeyboard();
                 openEditContactModal(contact);
             }
 
             @Override
             public void onDelete(Contact contact, int position) {
+                hideKeyboard();
                 confirmDeleteContact(contact);
             }
         });
@@ -77,7 +85,10 @@ public class NewChatActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        toolbarNewChat.setNavigationOnClickListener(v -> finish());
+        toolbarNewChat.setNavigationOnClickListener(v -> {
+            hideKeyboard();
+            finish();
+        });
 
         etNcSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -87,9 +98,20 @@ public class NewChatActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        btnAddContact.setOnClickListener(v -> openAddContactModal());
-        btnImportContacts.setOnClickListener(v -> importToNew());
-        btnNewGroup.setOnClickListener(v -> openNewGroupModal());
+        btnAddContact.setOnClickListener(v -> {
+            hideKeyboard();
+            openAddContactModal();
+        });
+
+        btnImportContacts.setOnClickListener(v -> {
+            hideKeyboard();
+            importToNew();
+        });
+
+        btnNewGroup.setOnClickListener(v -> {
+            hideKeyboard();
+            openNewGroupModal();
+        });
     }
 
     private void loadContacts() {
@@ -130,8 +152,7 @@ public class NewChatActivity extends AppCompatActivity {
     }
 
     private void openAddContactModal() {
-        Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_add_contact);
+        Dialog dialog = createStyledDialog(R.layout.dialog_add_contact);
 
         EditText etCName = dialog.findViewById(R.id.etCName);
         EditText etCNum = dialog.findViewById(R.id.etCNum);
@@ -154,14 +175,10 @@ public class NewChatActivity extends AppCompatActivity {
         });
 
         dialog.show();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
     }
 
     private void openEditContactModal(Contact contact) {
-        Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_add_contact);
+        Dialog dialog = createStyledDialog(R.layout.dialog_add_contact);
 
         EditText etCName = dialog.findViewById(R.id.etCName);
         EditText etCNum = dialog.findViewById(R.id.etCNum);
@@ -192,9 +209,6 @@ public class NewChatActivity extends AppCompatActivity {
         });
 
         dialog.show();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
     }
 
     private void confirmDeleteContact(Contact contact) {
@@ -212,8 +226,7 @@ public class NewChatActivity extends AppCompatActivity {
     }
 
     private void openNewGroupModal() {
-        Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.dialog_new_group);
+        Dialog dialog = createStyledDialog(R.layout.dialog_new_group);
 
         EditText etGName = dialog.findViewById(R.id.etGName);
         Button btnCreateGroup = dialog.findViewById(R.id.btnCreateGroup);
@@ -229,9 +242,16 @@ public class NewChatActivity extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    private Dialog createStyledDialog(int layoutResId) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(layoutResId);
         if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
+        return dialog;
     }
 
     private void saveContact(String name, String phone) {
@@ -242,4 +262,14 @@ public class NewChatActivity extends AppCompatActivity {
     }
 
     private void saveGroup(String groupName) {}
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
+    }
 }

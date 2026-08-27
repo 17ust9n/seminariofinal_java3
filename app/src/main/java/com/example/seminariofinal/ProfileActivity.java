@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -20,6 +21,7 @@ public class ProfileActivity extends AppCompatActivity {
     private Button btnEditProfile;
     private Button btnSettings;
     private Button btnLogout;
+    private BottomNavigationView bottomNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +41,12 @@ public class ProfileActivity extends AppCompatActivity {
         btnEditProfile = findViewById(R.id.btnEditProfile);
         btnSettings = findViewById(R.id.btnSettings);
         btnLogout = findViewById(R.id.btnLogout);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
+
+        bottomNavigation.setSelectedItemId(R.id.nav_profile);
     }
 
     private void loadUserData() {
-        // Cargar los datos del objeto ME almacenados localmente
         SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
 
         String username = preferences.getString("user_name", "Usuario Starssenger");
@@ -50,41 +54,43 @@ public class ProfileActivity extends AppCompatActivity {
 
         tvUserName.setText(username);
         tvUserEmail.setText(email);
-
-        // Aquí podrías usar una librería como Glide o Picasso para cargar la imagen si tienes una URL
-        // Glide.with(this).load(photoUrl).into(imgProfilePicture);
     }
 
     private void setupListeners() {
-        // Botón de flecha atrás en la Toolbar
-        toolbarProfile.setNavigationOnClickListener(v -> finish());
+        // Se quitó el listener de la flecha de navegación
 
-        // Botón Editar Perfil
         btnEditProfile.setOnClickListener(v -> {
             Toast.makeText(this, "Navegar a Editar Perfil", Toast.LENGTH_SHORT).show();
-            // TODO: Iniciar EditProfileActivity
         });
 
-        // Botón Ajustes
         btnSettings.setOnClickListener(v -> {
             Toast.makeText(this, "Navegar a Ajustes", Toast.LENGTH_SHORT).show();
-            // TODO: Iniciar SettingsActivity
         });
 
-        // Botón Cerrar Sesión
         btnLogout.setOnClickListener(v -> logoutUser());
+
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                return true;
+            }
+            return false;
+        });
     }
 
     private void logoutUser() {
-        // 1. Limpiar SharedPreferences (borra el estado de sesión / ME)
         SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
         editor.apply();
 
-        // 2. Redirigir al usuario al Login / Onboarding
         Intent intent = new Intent(ProfileActivity.this, OnboardingActivity.class);
-        // Limpiar la pila de actividades para que no se pueda volver atrás con el botón físico
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

@@ -1,85 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/navy"
     tools:context=".MainActivity">
 
-    <!-- Header / App Bar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
+    <!-- Header superior / Título -->
+    <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/imgLogo"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:contentDescription="Starssenger Logo"
-            android:src="@drawable/starssenger" />
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
 
         <TextView
-            android:id="@+id/txtBrand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="Starssenger"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
+            android:text="Chats"
+            android:textColor="@color/white"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
-        <View
-            android:id="@+id/dotStatus"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
-            android:layout_gravity="end"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/circle_dot" />
-    </com.google.android.material.appbar.MaterialToolbar>
-
-    <!-- Buscador -->
-    <EditText
-        android:id="@+id/etSearch"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_margin="12dp"
-        android:hint="Buscar…"
-        android:paddingHorizontal="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        <!-- Buscador estilizado -->
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input_dark"
+            android:hint="Buscar contacto o número…"
+            android:inputType="text"
+            android:paddingHorizontal="14dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/mut_text"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <!-- Lista de Chats -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChatList"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etSearch" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavigation"
+        android:layout_below="@id/topBar"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp" />
 
-    <!-- Botón Flotante para Nuevo Chat -->
+    <!-- Botón flotante Nuevo Chat -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabNewChat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_above="@id/bottomNavigation"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="20dp"
         android:contentDescription="Nuevo Chat"
-        app:srcCompat="@drawable/ic_edit_pencil"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/green_accent"
+        app:tint="@color/green_text" />
 
-    <!-- Barra Inferior de Navegación (Inicio y Perfil) -->
+    <!-- Navegación inferior -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_alignParentBottom="true"
+        android:background="@color/navy2"
+        app:itemActiveIndicatorStyle="@null"
+        app:itemIconTint="@color/nav_item_color"
+        app:itemRippleColor="@android:color/transparent"
+        app:itemTextColor="@color/nav_item_color"
         app:menu="@menu/bottom_nav_menu" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

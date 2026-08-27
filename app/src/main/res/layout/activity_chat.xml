@@ -1,115 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/navy">
 
     <!-- Header del Chat -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarChat"
+    <LinearLayout
+        android:id="@+id/chatHeader"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="60dp"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:background="@color/navy">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/white"
+            android:contentDescription="Volver atrás" />
+
+        <!-- Avatar Circular (#chAv) -->
+        <TextView
+            android:id="@+id/chAv"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_input_dark"
+            android:gravity="center"
+            android:text="U"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvChName"
+                android:id="@+id/chName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
+                android:textColor="@color/white"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                tools:text="Nombre Usuario" />
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvChSub"
+                android:id="@+id/chSub"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:textSize="12sp"
-                tools:text="En línea" />
+                android:text="En línea"
+                android:textColor="@color/mut_text"
+                android:textSize="12sp" />
         </LinearLayout>
+    </LinearLayout>
 
-        <!-- Botones de Llamada en el Header -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/btnVoiceCall"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Iniciar llamada de voz"
-                android:src="@drawable/ic_call"
-                app:tint="@android:color/white" />
-
-            <ImageButton
-                android:id="@+id/btnVideoCall"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Iniciar videollamada"
-                android:src="@drawable/ic_videocam"
-                app:tint="@android:color/white" />
-        </LinearLayout>
-    </com.google.android.material.appbar.MaterialToolbar>
-
-    <!-- Área del Chat (chat) -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMessages"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/layoutBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarChat" />
-
-    <!-- Barra de Entrada de Texto / Micrófono (bar) -->
+    <!-- Barra Inferior de Entrada (#bar) -->
     <LinearLayout
-        android:id="@+id/layoutBar"
+        android:id="@+id/inputBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:padding="10dp">
 
         <EditText
-            android:id="@+id/etTxt"
+            android:id="@+id/txtInput"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_input_field"
+            android:background="@drawable/bg_input_dark"
             android:hint="Mensaje cifrado…"
-            android:inputType="textMultiLine"
-            android:paddingHorizontal="16dp" />
+            android:textColorHint="@color/mut_text"
+            android:paddingHorizontal="16dp"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
 
         <ImageButton
-            android:id="@+id/btnMic"
+            android:id="@+id/micBtn"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Grabar mensaje de voz"
-            android:src="@drawable/ic_mic" />
-
-        <ImageButton
-            android:id="@+id/btnSend"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Enviar mensaje"
-            android:src="@drawable/ic_send"
-            android:visibility="gone" />
+            android:src="@android:drawable/ic_btn_speak_now"
+            app:tint="@color/white"
+            android:contentDescription="Grabar mensaje de voz" />
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Lista de Mensajes (#chat) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chatRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/inputBar"
+        android:layout_below="@id/chatHeader"
+        android:padding="16dp"
+        android:clipToPadding="false" />
+
+</RelativeLayout>

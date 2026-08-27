@@ -19,7 +19,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
@@ -34,9 +33,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
-    private MaterialToolbar toolbarChat;
+    private ImageButton btnBack, btnMic;
     private TextView tvChName, tvChSub;
-    private ImageButton btnVoiceCall, btnVideoCall, btnMic, btnSend;
     private EditText etTxt;
     private RecyclerView rvMessages;
 
@@ -98,15 +96,12 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbarChat = findViewById(R.id.toolbarChat);
-        tvChName = findViewById(R.id.tvChName);
-        tvChSub = findViewById(R.id.tvChSub);
-        btnVoiceCall = findViewById(R.id.btnVoiceCall);
-        btnVideoCall = findViewById(R.id.btnVideoCall);
-        btnMic = findViewById(R.id.btnMic);
-        btnSend = findViewById(R.id.btnSend);
-        etTxt = findViewById(R.id.etTxt);
-        rvMessages = findViewById(R.id.rvMessages);
+        btnBack = findViewById(R.id.btnBack);
+        tvChName = findViewById(R.id.chName);
+        tvChSub = findViewById(R.id.chSub);
+        btnMic = findViewById(R.id.micBtn);
+        etTxt = findViewById(R.id.txtInput);
+        rvMessages = findViewById(R.id.chatRecyclerView);
 
         rvMessages.setLayoutManager(new LinearLayoutManager(this));
 
@@ -162,15 +157,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        toolbarChat.setNavigationOnClickListener(v -> finish());
-
-        etTxt.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                toggleBarBtns(s.toString().trim());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        btnBack.setOnClickListener(v -> finish());
 
         etTxt.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEND) {
@@ -180,18 +167,27 @@ public class ChatActivity extends AppCompatActivity {
             return false;
         });
 
-        btnSend.setOnClickListener(v -> send());
-        btnMic.setOnClickListener(v -> toggleRec());
-    }
+        btnMic.setOnClickListener(v -> {
+            String text = etTxt.getText().toString().trim();
+            if (!text.isEmpty()) {
+                send();
+            } else {
+                toggleRec();
+            }
+        });
 
-    private void toggleBarBtns(String text) {
-        if (!text.isEmpty()) {
-            btnSend.setVisibility(View.VISIBLE);
-            btnMic.setVisibility(View.GONE);
-        } else {
-            btnSend.setVisibility(View.GONE);
-            btnMic.setVisibility(View.VISIBLE);
-        }
+        etTxt.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() > 0) {
+                    btnMic.setImageResource(android.R.drawable.ic_menu_send);
+                } else {
+                    btnMic.setImageResource(android.R.drawable.ic_btn_speak_now);
+                }
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void send() {

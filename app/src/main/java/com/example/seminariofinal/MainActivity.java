@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -60,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         rebuildConvs();
         renderList(etSearch.getText().toString());
+
+        // Asegurar que la pestaña activa sea Chats (Home) al volver
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_home);
+        }
     }
 
     private void initViews() {
@@ -70,10 +77,10 @@ public class MainActivity extends AppCompatActivity {
 
         rvChatList.setLayoutManager(new LinearLayoutManager(this));
 
-        // 'false' desactiva la visibilidad de los botones de editar y eliminar
         adapter = new ContactAdapter(new ArrayList<>(), false, new ContactAdapter.OnContactActionListener() {
             @Override
             public void onContactClick(Contact contact) {
+                hideKeyboard();
                 Intent intent = new Intent(MainActivity.this, ChatActivity.class);
                 intent.putExtra("contact_name", contact.getName());
                 intent.putExtra("contact_phone", contact.getPhone());
@@ -81,14 +88,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onEdit(Contact contact, int position) {
-                // No se utiliza en MainActivity
-            }
+            public void onEdit(Contact contact, int position) {}
 
             @Override
-            public void onDelete(Contact contact, int position) {
-                // No se utiliza en MainActivity
-            }
+            public void onDelete(Contact contact, int position) {}
         });
 
         rvChatList.setAdapter(adapter);
@@ -108,9 +111,10 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigation.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                goHome();
+                // Ya estás en la pantalla principal
                 return true;
             } else if (itemId == R.id.nav_profile) {
+                hideKeyboard();
                 openProfile();
                 return true;
             }
@@ -150,10 +154,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
+    }
+
     private void startNet() {}
     private void subscribeToTopics() {}
 
     private void openNewChat() {
+        hideKeyboard();
         Intent intent = new Intent(MainActivity.this, NewChatActivity.class);
         startActivity(intent);
     }
@@ -161,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
     private void goHome() {}
 
     private void openProfile() {
+        hideKeyboard();
         Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
         startActivity(intent);
     }

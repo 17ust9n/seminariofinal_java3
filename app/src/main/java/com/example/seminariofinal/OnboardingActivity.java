@@ -3,24 +3,28 @@ package com.example.seminariofinal;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import com.google.android.material.button.MaterialButton;
 
 public class OnboardingActivity extends AppCompatActivity {
 
     private EditText etPhone;
-    private Button btnSecNormal;
-    private Button btnSecBlindado;
+    private MaterialButton btnSecNormal;
+    private MaterialButton btnSecBlindado;
     private Button btnEnter;
     private TextView tvError;
 
-    // Nivel de seguridad actual: 0 = Normal, 1 = Blindado
     private int selectedSecurityLevel = 0;
 
     @Override
@@ -29,7 +33,7 @@ public class OnboardingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_onboarding);
 
         initViews();
-        setSec(0); // Estado por defecto: Normal
+        setSec(0);
         setupListeners();
     }
 
@@ -42,17 +46,13 @@ public class OnboardingActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // Eventos para cambiar el modo de seguridad
         btnSecNormal.setOnClickListener(v -> setSec(0));
         btnSecBlindado.setOnClickListener(v -> setSec(1));
-
-        // Evento al presionar el botón "Entrar"
         btnEnter.setOnClickListener(v -> saveMe());
 
-        // Evento al presionar Enter/Hecho en el teclado del celular
         etPhone.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
-                    actionId == android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED) {
+            if (actionId == EditorInfo.IME_ACTION_DONE ||
+                    actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
                 saveMe();
                 return true;
             }
@@ -60,32 +60,42 @@ public class OnboardingActivity extends AppCompatActivity {
         });
     }
 
-    // Equivalente a setSec(sec) en tu JS
     private void setSec(int level) {
         selectedSecurityLevel = level;
 
+        int activeColor = ContextCompat.getColor(this, R.color.green_accent);
+        int activeTextColor = ContextCompat.getColor(this, R.color.green_text);
+        int inactiveColor = ContextCompat.getColor(this, R.color.navy_input);
+        int inactiveTextColor = ContextCompat.getColor(this, R.color.white);
+        int borderColor = ContextCompat.getColor(this, R.color.line_border);
+
         if (level == 0) {
-            // Normal Seleccionado
-            btnSecNormal.setBackgroundColor(ContextCompat.getColor(this, R.color.purple_500));
-            btnSecNormal.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            btnSecNormal.setBackgroundTintList(ColorStateList.valueOf(activeColor));
+            btnSecNormal.setTextColor(activeTextColor);
+            btnSecNormal.setStrokeWidth(0);
 
-            btnSecBlindado.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent));
-            btnSecBlindado.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+            btnSecBlindado.setBackgroundTintList(ColorStateList.valueOf(inactiveColor));
+            btnSecBlindado.setTextColor(inactiveTextColor);
+            btnSecBlindado.setStrokeColor(ColorStateList.valueOf(borderColor));
+            btnSecBlindado.setStrokeWidth(2);
         } else {
-            // Blindado Seleccionado
-            btnSecBlindado.setBackgroundColor(ContextCompat.getColor(this, R.color.purple_500));
-            btnSecBlindado.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            btnSecBlindado.setBackgroundTintList(ColorStateList.valueOf(activeColor));
+            btnSecBlindado.setTextColor(activeTextColor);
+            btnSecBlindado.setStrokeWidth(0);
 
-            btnSecNormal.setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent));
-            btnSecNormal.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+            btnSecNormal.setBackgroundTintList(ColorStateList.valueOf(inactiveColor));
+            btnSecNormal.setTextColor(inactiveTextColor);
+            btnSecNormal.setStrokeColor(ColorStateList.valueOf(borderColor));
+            btnSecNormal.setStrokeWidth(2);
         }
     }
 
-    // Equivalente a saveMe() en tu JS
     private void saveMe() {
+        // Ocultar teclado al intentar procesar los datos
+        hideKeyboard();
+
         String phoneNumber = etPhone.getText().toString().trim();
 
-        // Validar número
         if (TextUtils.isEmpty(phoneNumber)) {
             showError("Ingresa un número válido con código de país");
             return;
@@ -96,21 +106,29 @@ public class OnboardingActivity extends AppCompatActivity {
             return;
         }
 
-        // Limpiar errores si la validación pasa
         tvError.setVisibility(View.GONE);
 
-        // Guardar sesión (ME y SECURE) en SharedPreferences
         SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
-        editor.putString("user_phone", phoneNumber);           // Representa a ME
-        editor.putInt("security_level", selectedSecurityLevel); // Representa a SECURE
+        editor.putString("user_phone", phoneNumber);
+        editor.putInt("security_level", selectedSecurityLevel);
         editor.putBoolean("is_logged_in", true);
         editor.apply();
 
         Intent intent = new Intent(OnboardingActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
     }
 
     private void showError(String message) {
