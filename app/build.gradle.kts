@@ -42,4 +42,11 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+    // Lazysodium para Android
+    implementation("com.goterl:lazysodium-android:5.1.0@aar")
+// Java Native Access (JNA)
+    implementation("net.java.dev.jna:jna:5.14.0@aar")
+
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
 }

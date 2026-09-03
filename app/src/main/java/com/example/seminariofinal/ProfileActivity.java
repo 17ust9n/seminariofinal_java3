@@ -8,6 +8,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
+
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
@@ -47,18 +50,41 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserData() {
+        // 1. Datos generales de preferencias comunes
         SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
 
-        String username = preferences.getString("user_name", "Usuario Starssenger");
-        String email = preferences.getString("user_email", "correo@ejemplo.com");
+        String userPhone = preferences.getString("user_phone", "Sin número");
+        int secLevel = preferences.getInt("security_level", 0);
+        String secLabel = (secLevel == 1) ? "Modo Blindado 🛡️" : "Modo Normal ⚡";
 
-        tvUserName.setText(username);
-        tvUserEmail.setText(email);
+        tvUserName.setText(userPhone);
+
+        // 2. Leer Clave Pública cifrada para mostrar la identidad criptográfica si lo deseas
+        try {
+            MasterKey masterKey = new MasterKey.Builder(this)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+
+            SharedPreferences securePrefs = EncryptedSharedPreferences.create(
+                    this,
+                    "starssenger_secure_prefs",
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+
+            String publicKey = securePrefs.getString("public_key", "No disponible");
+
+            // Muestra el nivel de seguridad y una vista previa corta de la clave pública
+            String subtext = secLabel + "\nPK: " + (publicKey.length() > 12 ? publicKey.substring(0, 12) + "..." : publicKey);
+            tvUserEmail.setText(subtext);
+
+        } catch (Exception e) {
+            tvUserEmail.setText(secLabel);
+        }
     }
 
     private void setupListeners() {
-        // Se quitó el listener de la flecha de navegación
-
         btnEditProfile.setOnClickListener(v -> {
             Toast.makeText(this, "Navegar a Editar Perfil", Toast.LENGTH_SHORT).show();
         });
@@ -85,11 +111,29 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void logoutUser() {
+        // 1. Limpiar preferencias de aplicación generales
         SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.apply();
+        preferences.edit().clear().apply();
 
+        // 2. Eliminar las claves criptográficas almacenadas en EncryptedSharedPreferences
+        try {
+            MasterKey masterKey = new MasterKey.Builder(this)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+
+            SharedPreferences securePrefs = EncryptedSharedPreferences.create(
+                    this,
+                    "starssenger_secure_prefs",
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+            securePrefs.edit().clear().apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 3. Redirigir al Onboarding cerrando el stack de actividades
         Intent intent = new Intent(ProfileActivity.this, OnboardingActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

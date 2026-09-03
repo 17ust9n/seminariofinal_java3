@@ -11,7 +11,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -66,6 +65,8 @@ public class NewChatActivity extends AppCompatActivity {
                 Intent intent = new Intent(NewChatActivity.this, ChatActivity.class);
                 intent.putExtra("contact_name", contact.getName());
                 intent.putExtra("contact_phone", contact.getPhone());
+                // Pasar la clave pública del contacto a ChatActivity
+                intent.putExtra("contact_public_key", contact.getPublicKey());
                 startActivity(intent);
             }
 
@@ -156,6 +157,7 @@ public class NewChatActivity extends AppCompatActivity {
 
         EditText etCName = dialog.findViewById(R.id.etCName);
         EditText etCNum = dialog.findViewById(R.id.etCNum);
+        EditText etCPublicKey = dialog.findViewById(R.id.etCPublicKey);
         Button btnSave = dialog.findViewById(R.id.btnSaveContact);
         Button btnCancel = dialog.findViewById(R.id.btnCancelContact);
         TextView tvCErr = dialog.findViewById(R.id.tvCErr);
@@ -164,12 +166,13 @@ public class NewChatActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> {
             String name = etCName.getText().toString().trim();
             String num = etCNum.getText().toString().trim();
+            String pubKey = etCPublicKey != null ? etCPublicKey.getText().toString().trim() : "";
 
             if (name.isEmpty() || num.isEmpty()) {
-                tvCErr.setText("Completa todos los campos");
+                tvCErr.setText("Completa nombre y número de teléfono");
                 tvCErr.setVisibility(View.VISIBLE);
             } else {
-                saveContact(name, num);
+                saveContact(name, num, pubKey);
                 dialog.dismiss();
             }
         });
@@ -182,25 +185,31 @@ public class NewChatActivity extends AppCompatActivity {
 
         EditText etCName = dialog.findViewById(R.id.etCName);
         EditText etCNum = dialog.findViewById(R.id.etCNum);
+        EditText etCPublicKey = dialog.findViewById(R.id.etCPublicKey);
         Button btnSave = dialog.findViewById(R.id.btnSaveContact);
         Button btnCancel = dialog.findViewById(R.id.btnCancelContact);
         TextView tvCErr = dialog.findViewById(R.id.tvCErr);
 
         etCName.setText(contact.getName());
         etCNum.setText(contact.getPhone());
+        if (etCPublicKey != null && contact.getPublicKey() != null) {
+            etCPublicKey.setText(contact.getPublicKey());
+        }
         btnSave.setText("Actualizar");
 
         btnCancel.setOnClickListener(v -> dialog.dismiss());
         btnSave.setOnClickListener(v -> {
             String newName = etCName.getText().toString().trim();
             String newNum = etCNum.getText().toString().trim();
+            String newPubKey = etCPublicKey != null ? etCPublicKey.getText().toString().trim() : "";
 
             if (newName.isEmpty() || newNum.isEmpty()) {
-                tvCErr.setText("Completa todos los campos");
+                tvCErr.setText("Completa nombre y número de teléfono");
                 tvCErr.setVisibility(View.VISIBLE);
             } else {
                 contact.setName(newName);
                 contact.setPhone(newNum);
+                contact.setPublicKey(newPubKey);
                 saveContactsToPrefs();
                 renderNewChat(etNcSearch.getText().toString());
                 Toast.makeText(this, "Contacto actualizado", Toast.LENGTH_SHORT).show();
@@ -254,8 +263,8 @@ public class NewChatActivity extends AppCompatActivity {
         return dialog;
     }
 
-    private void saveContact(String name, String phone) {
-        contactList.add(new Contact(name, phone));
+    private void saveContact(String name, String phone, String publicKey) {
+        contactList.add(new Contact(name, phone, publicKey));
         saveContactsToPrefs();
         Toast.makeText(this, "Contacto guardado", Toast.LENGTH_SHORT).show();
         renderNewChat(etNcSearch.getText().toString());

@@ -4,6 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import com.goterl.lazysodium.utils.KeyPair;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
+// Resuelve MasterKey y EncryptedSharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKey;
+
+// Resuelve LazySodiumAndroid y KeyPair
+import com.goterl.lazysodium.LazySodiumAndroid;
+import com.goterl.lazysodium.utils.KeyPair;
+
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -91,7 +102,6 @@ public class OnboardingActivity extends AppCompatActivity {
     }
 
     private void saveMe() {
-        // Ocultar teclado al intentar procesar los datos
         hideKeyboard();
 
         String phoneNumber = etPhone.getText().toString().trim();
@@ -108,17 +118,50 @@ public class OnboardingActivity extends AppCompatActivity {
 
         tvError.setVisibility(View.GONE);
 
-        SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
+        // 1. Generar KeyPair de Sodium para el protocolo Diffie-Hellman / Box
+        // Es recomendable procesar esto fuera del Hilo de UI
+        new Thread(() -> {
+            try {
+                LazySodiumAndroid sodium = SodiumManager.getInstance();
+                KeyPair keyPair = sodium.cryptoBoxKeypair(); // Claves para cifrado asimétrico
 
-        editor.putString("user_phone", phoneNumber);
-        editor.putInt("security_level", selectedSecurityLevel);
-        editor.putBoolean("is_logged_in", true);
-        editor.apply();
+                // 2. Usar EncryptedSharedPreferences para almacenar claves y sesión de forma segura
+                MasterKey masterKey = new MasterKey.Builder(OnboardingActivity.this)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build();
 
-        Intent intent = new Intent(OnboardingActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish();
+                SharedPreferences securePrefs = EncryptedSharedPreferences.create(
+                        OnboardingActivity.this,
+                        "starssenger_secure_prefs",
+                        masterKey,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                );
+
+                SharedPreferences.Editor secureEditor = securePrefs.edit();
+                secureEditor.putString("public_key", keyPair.getPublicKey().getAsHexString());
+                secureEditor.putString("secret_key", keyPair.getSecretKey().getAsHexString());
+                secureEditor.apply();
+
+                // 3. Guardar estado general de la aplicación
+                SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putString("user_phone", phoneNumber);
+                editor.putInt("security_level", selectedSecurityLevel);
+                editor.putBoolean("is_logged_in", true);
+                editor.apply();
+
+                // 4. Volver al UI Thread para navegar a MainActivity
+                runOnUiThread(() -> {
+                    Intent intent = new Intent(OnboardingActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() -> showError("Error al generar las claves de seguridad: " + e.getMessage()));
+            }
+        }).start();
     }
 
     private void hideKeyboard() {

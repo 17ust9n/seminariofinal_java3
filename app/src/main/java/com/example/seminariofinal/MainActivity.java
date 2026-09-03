@@ -12,6 +12,11 @@ import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+// Importaciones de Lazysodium
+import com.goterl.lazysodium.LazySodiumAndroid;
+import com.goterl.lazysodium.SodiumAndroid;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -32,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     private List<Contact> contactList = new ArrayList<>();
     private ContactAdapter adapter;
 
+    // Instancia global de Lazysodium para usar cifrado en esta Activity
+    private LazySodiumAndroid lazySodium;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_main);
+
+        // Inicializar Lazysodium con el motor nativo de Android
+        lazySodium = new LazySodiumAndroid(new SodiumAndroid());
 
         initViews();
 
@@ -179,5 +190,10 @@ public class MainActivity extends AppCompatActivity {
         hideKeyboard();
         Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
         startActivity(intent);
+    }
+
+    // Getter para obtener la instancia desde otras partes si fuere necesario
+    public LazySodiumAndroid getLazySodium() {
+        return lazySodium;
     }
 }
