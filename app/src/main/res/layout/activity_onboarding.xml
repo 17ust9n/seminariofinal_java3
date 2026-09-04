@@ -109,13 +109,13 @@
             android:textColor="@color/mut_text"
             android:textSize="12sp" />
 
-        <!-- Botón Entrar -->
+        <!-- Botón Entrar con emoji -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEnter"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="28dp"
-            android:text="Entrar"
+            android:text="🚀 Entrar"
             android:textColor="@color/green_text"
             android:textSize="15sp"
             android:textStyle="bold"

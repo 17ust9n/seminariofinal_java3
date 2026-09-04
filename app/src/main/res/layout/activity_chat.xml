@@ -26,16 +26,17 @@
             android:contentDescription="Volver atrás" />
 
         <!-- Avatar Circular (#chAv) -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/chAv"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="12dp"
-            android:background="@drawable/bg_input_dark"
+            android:backgroundTint="@color/navy2"
             android:gravity="center"
-            android:text="U"
             android:textColor="@color/white"
-            android:textStyle="bold" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:shapeAppearanceOverlay="@style/CircleFAB" />
 
         <LinearLayout
             android:layout_width="0dp"

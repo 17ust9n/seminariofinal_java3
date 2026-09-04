@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
-    <!-- CARACTERÍSTICAS DE HARDWARE (Resuelve la advertencia) -->
+    <!-- CARACTERÍSTICAS DE HARDWARE -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -69,6 +69,18 @@
         <activity
             android:name=".CallActivity"
             android:exported="false" />
+
+        <!-- 7. EDITAR PERFIL -->
+        <activity
+            android:name=".EditProfileActivity"
+            android:exported="false"
+            android:parentActivityName=".ProfileActivity" />
+
+        <!-- 8. AJUSTES Y SEGURIDAD -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:parentActivityName=".ProfileActivity" />
 
     </application>
 

@@ -41,7 +41,7 @@
                 android:src="@drawable/ic_profile_placeholder"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
 
-            <!-- Nombre de Usuario -->
+            <!-- Teléfono / Nombre de Usuario -->
             <TextView
                 android:id="@+id/tvUserName"
                 android:layout_width="wrap_content"
@@ -50,17 +50,19 @@
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                tools:text="Usuario Starssenger" />
+                tools:text="+54 9 11 1234-5678" />
 
-            <!-- Email -->
+            <!-- Modo de Seguridad y Clave Pública (Toca para copiar) -->
             <TextView
                 android:id="@+id/tvUserEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
                 android:textColor="@color/mut_text"
-                android:textSize="14sp"
-                tools:text="correo@ejemplo.com" />
+                android:textSize="13sp"
+                tools:text="Modo Blindado 🛡️\nClave Pública (Toca para copiar):\na1b2c3d4...e5f6g7h8" />
 
             <!-- Separador -->
             <View

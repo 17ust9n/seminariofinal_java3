@@ -5,7 +5,6 @@ import com.goterl.lazysodium.interfaces.Box;
 import com.goterl.lazysodium.utils.Key;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -43,7 +42,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private ImageButton btnBack;
     private FloatingActionButton btnMic;
-    private TextView tvChName, tvChSub;
+    private TextView tvChName, tvChSub, tvChAv;
     private EditText etTxt;
     private RecyclerView rvMessages;
 
@@ -108,8 +107,24 @@ public class ChatActivity extends AppCompatActivity {
             contactPhone = getIntent().getStringExtra("contact_phone");
             contactPublicKeyHex = getIntent().getStringExtra("contact_public_key");
 
-            if (name != null && !name.isEmpty()) tvChName.setText(name);
-            if (contactPhone != null && !contactPhone.isEmpty()) tvChSub.setText(contactPhone);
+            if (name != null && !name.trim().isEmpty()) {
+                tvChName.setText(name);
+
+                // Asignar primera letra en mayúscula al avatar
+                String initial = name.trim().substring(0, 1).toUpperCase();
+                if (tvChAv != null) {
+                    tvChAv.setText(initial);
+                }
+            } else {
+                tvChName.setText("Usuario");
+                if (tvChAv != null) {
+                    tvChAv.setText("U");
+                }
+            }
+
+            if (contactPhone != null && !contactPhone.isEmpty()) {
+                tvChSub.setText(contactPhone);
+            }
         }
     }
 
@@ -117,11 +132,11 @@ public class ChatActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         tvChName = findViewById(R.id.chName);
         tvChSub = findViewById(R.id.chSub);
+        tvChAv = findViewById(R.id.chAv);
         btnMic = findViewById(R.id.micBtn);
         etTxt = findViewById(R.id.txtInput);
         rvMessages = findViewById(R.id.chatRecyclerView);
 
-        // Icono inicial de micrófono
         btnMic.setImageResource(android.R.drawable.ic_btn_speak_now);
 
         rvMessages.setLayoutManager(new LinearLayoutManager(this));
@@ -166,10 +181,8 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().trim().length() > 0) {
-                    // Si hay texto, mostrar icono de envío
                     btnMic.setImageResource(android.R.drawable.ic_menu_send);
                 } else {
-                    // Si el campo está vacío, volver al icono de micrófono
                     btnMic.setImageResource(android.R.drawable.ic_btn_speak_now);
                 }
             }
@@ -354,7 +367,7 @@ public class ChatActivity extends AppCompatActivity {
         audioFilePath = new File(getFilesDir(), UUID.randomUUID().toString() + ".wav").getAbsolutePath();
         recorderHelper.startRecording(audioFilePath);
         isRecording = true;
-        btnMic.setImageResource(android.R.drawable.ic_media_pause); // Cambia icono mientras graba
+        btnMic.setImageResource(android.R.drawable.ic_media_pause);
         Toast.makeText(this, "Grabando audio...", Toast.LENGTH_SHORT).show();
     }
 
@@ -362,13 +375,13 @@ public class ChatActivity extends AppCompatActivity {
         if (isRecording) {
             String encryptedPath = audioFilePath.replace(".wav", ".enc");
 
-            com.goterl.lazysodium.utils.Key key = recorderHelper.generateSecretKey();
+            Key key = recorderHelper.generateSecretKey();
             byte[] nonce = recorderHelper.generateNonce();
 
             recorderHelper.stopRecording(audioFilePath, key, nonce, encryptedPath);
             isRecording = false;
 
-            btnMic.setImageResource(android.R.drawable.ic_btn_speak_now); // Restaura icono de micrófono
+            btnMic.setImageResource(android.R.drawable.ic_btn_speak_now);
 
             File encryptedFile = new File(encryptedPath);
             if (encryptedFile.exists() && encryptedFile.length() > 0) {

@@ -38,12 +38,19 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Uso de tu SodiumManager existente
+        // Instancia de Sodium
         sodium = SodiumManager.getInstance();
 
         initViews();
         loadUserData();
         setupListeners();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Recargar datos cuando el usuario regresa de Editar Perfil o Ajustes
+        loadUserData();
     }
 
     private void initViews() {
@@ -125,12 +132,16 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
+        // Abrir la pantalla de Editar Perfil
         btnEditProfile.setOnClickListener(v -> {
-            Toast.makeText(this, "Navegar a Editar Perfil", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
+            startActivity(intent);
         });
 
+        // Abrir la pantalla de Ajustes y Seguridad
         btnSettings.setOnClickListener(v -> {
-            Toast.makeText(this, "Navegar a Ajustes", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(ProfileActivity.this, SettingsActivity.class);
+            startActivity(intent);
         });
 
         btnLogout.setOnClickListener(v -> logoutUser());
