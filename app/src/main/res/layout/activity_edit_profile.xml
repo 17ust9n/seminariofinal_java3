@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:background="@color/navy"
         app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/green_accent"
         app:title="Editar Perfil"
         app:titleTextColor="@color/white" />
 
