@@ -8,12 +8,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.security.crypto.EncryptedSharedPreferences;
-import androidx.security.crypto.MasterKey;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.goterl.lazysodium.LazySodiumAndroid;
+import com.goterl.lazysodium.interfaces.Box;
+import com.goterl.lazysodium.utils.Key;
 import com.goterl.lazysodium.utils.KeyPair;
+
+import java.io.File;
 
 public class CallActivity extends AppCompatActivity {
 
@@ -30,17 +32,35 @@ public class CallActivity extends AppCompatActivity {
     // Elementos de seguridad efímeros
     private KeyPair ephemeralKeyPair;
     private byte[] sessionKey;
+    private byte[] callNonce;
+
+    // Helper de Audio y Rutas
+    private AudioRecorderHelper audioRecorderHelper;
+    private String tempWavPath;
+    private String encryptedAudioPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
 
+        audioRecorderHelper = new AudioRecorderHelper();
+        setupAudioPaths();
+
         getIntentData();
         initViews();
         setupListeners();
         checkPendingCall();
         generateEphemeralKeys();
+    }
+
+    private void setupAudioPaths() {
+        File dir = getExternalFilesDir(null);
+        if (dir != null) {
+            long timestamp = System.currentTimeMillis();
+            tempWavPath = dir.getAbsolutePath() + "/call_recording_" + timestamp + ".wav";
+            encryptedAudioPath = dir.getAbsolutePath() + "/call_recording_" + timestamp + ".enc";
+        }
     }
 
     private void getIntentData() {
@@ -76,10 +96,18 @@ public class CallActivity extends AppCompatActivity {
     }
 
     private void generateEphemeralKeys() {
-        // Generar llaves efímeras para Forward Secrecy en la llamada
+        // Generar llaves efímeras para Perfect Forward Secrecy
         new Thread(() -> {
-            LazySodiumAndroid sodium = SodiumManager.getInstance();
-            ephemeralKeyPair = sodium.cryptoBoxKeypair();
+            try {
+                LazySodiumAndroid sodium = SodiumManager.getInstance();
+                ephemeralKeyPair = sodium.cryptoBoxKeypair();
+                callNonce = audioRecorderHelper.generateNonce();
+            } catch (com.goterl.lazysodium.exceptions.SodiumException e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Error al generar claves efímeras: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+            }
         }).start();
     }
 
@@ -102,24 +130,39 @@ public class CallActivity extends AppCompatActivity {
                 if (contactPublicKey != null && !contactPublicKey.isEmpty() && ephemeralKeyPair != null) {
                     LazySodiumAndroid sodium = SodiumManager.getInstance();
 
-                    // Cálculo Diffie-Hellman para establecer canal seguro
-                    // (ephemeralKeyPair.getSecretKey() x contactPublicKey)
+                    // 1. Convertir la clave pública recibida en formato Hex
+                    Key remotePubKey = Key.fromHexString(contactPublicKey);
 
-                    runOnUiThread(() -> {
-                        tvVfState.setText("En llamada (E2EE 🔒)");
-                    });
+                    // 2. Crear array para almacenar la clave precalculada (32 bytes)
+                    sessionKey = new byte[Box.BEFORENMBYTES];
+
+                    // 3. Ejecutar el Handshake ECDH (X25519) usando cryptoBoxBeforeNm (retorna boolean)
+                    boolean success = sodium.cryptoBoxBeforeNm(
+                            sessionKey,
+                            remotePubKey.getAsBytes(),
+                            ephemeralKeyPair.getSecretKey().getAsBytes()
+                    );
+
+                    if (success) {
+                        runOnUiThread(() -> tvVfState.setText("En llamada (E2EE 🔒)"));
+
+                        // 4. Iniciar la grabación de la llamada
+                        audioRecorderHelper.startRecording(tempWavPath);
+                    } else {
+                        runOnUiThread(() -> tvVfState.setText("En llamada (Sin cifrar)"));
+                    }
                 } else {
-                    runOnUiThread(() -> {
-                        tvVfState.setText("En llamada (Sin cifrar)");
-                    });
+                    runOnUiThread(() -> tvVfState.setText("En llamada (Sin cifrar)"));
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 runOnUiThread(() -> Toast.makeText(this, "Error en handshake", Toast.LENGTH_SHORT).show());
             }
         }).start();
     }
 
     private void hangup() {
+        stopAndEncryptAudio();
         cleanUpSession();
         finish();
     }
@@ -130,9 +173,27 @@ public class CallActivity extends AppCompatActivity {
         finish();
     }
 
+    private void stopAndEncryptAudio() {
+        if (sessionKey != null && callNonce != null) {
+            Key keyObject = Key.fromBytes(sessionKey);
+            // Detiene grabación, compila el WAV y lo cifra con la clave de sesión E2EE derivada
+            audioRecorderHelper.stopRecording(tempWavPath, keyObject, callNonce, encryptedAudioPath);
+        } else {
+            // Si la llamada no fue cifrada, detiene sin generar cifrado final
+            audioRecorderHelper.stopRecording(tempWavPath, null, null, null);
+        }
+    }
+
     private void cleanUpSession() {
-        // Limpiar de memoria la clave de sesión al finalizar la llamada
-        sessionKey = null;
+        // Borrar claves efímeras de la memoria para proteger la privacidad tras colgar
+        if (sessionKey != null) {
+            java.util.Arrays.fill(sessionKey, (byte) 0);
+            sessionKey = null;
+        }
+        if (callNonce != null) {
+            java.util.Arrays.fill(callNonce, (byte) 0);
+            callNonce = null;
+        }
         ephemeralKeyPair = null;
     }
 

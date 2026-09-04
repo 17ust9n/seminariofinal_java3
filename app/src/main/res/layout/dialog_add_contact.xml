@@ -9,6 +9,7 @@
     android:padding="20dp">
 
     <TextView
+        android:id="@+id/tvDialogTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Contacto"
@@ -35,6 +36,18 @@
         android:background="@drawable/bg_input_dark"
         android:hint="Número con código de país"
         android:inputType="number"
+        android:paddingHorizontal="12dp"
+        android:textColor="@color/white"
+        android:textColorHint="@color/mut_text" />
+
+    <EditText
+        android:id="@+id/etCPublicKey"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_input_dark"
+        android:hint="Clave pública Libsodium (Hex)"
+        android:inputType="textNoSuggestions"
         android:paddingHorizontal="12dp"
         android:textColor="@color/white"
         android:textColorHint="@color/mut_text" />
@@ -70,6 +83,9 @@
             android:layout_marginStart="8dp"
             android:text="Guardar"
             android:textColor="@color/green_text"
-            app:backgroundTint="@color/green_accent" />
+            app:backgroundTint="@color/green_accent"
+            app:icon="@drawable/ic_save"
+            app:iconTint="@color/green_text"
+            app:iconPadding="8dp" />
     </LinearLayout>
 </LinearLayout>

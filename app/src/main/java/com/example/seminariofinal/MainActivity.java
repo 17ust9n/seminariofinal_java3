@@ -86,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
         fabNewChat = findViewById(R.id.fabNewChat);
         bottomNavigation = findViewById(R.id.bottomNavigation);
 
+        // Asignar icono de lápiz
+        fabNewChat.setImageResource(R.drawable.ic_edit_pencil);
+
         rvChatList.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new ContactAdapter(new ArrayList<>(), false, new ContactAdapter.OnContactActionListener() {

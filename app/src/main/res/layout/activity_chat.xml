@@ -83,14 +83,20 @@
             android:textColor="@color/white"
             android:textSize="14sp" />
 
-        <ImageButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/micBtn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Grabar audio o enviar"
+            app:backgroundTint="@color/green_accent"
+            app:fabCustomSize="48dp"
+            app:maxImageSize="24dp"
+            app:shapeAppearanceOverlay="@style/CircleFAB"
             android:src="@android:drawable/ic_btn_speak_now"
-            app:tint="@color/white"
-            android:contentDescription="Grabar mensaje de voz" />
+            app:tint="@android:color/black" />
     </LinearLayout>
 
     <!-- Lista de Mensajes (#chat) -->

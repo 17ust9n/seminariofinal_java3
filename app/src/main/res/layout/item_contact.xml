@@ -29,13 +29,32 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvContactName"
+        <!-- Contenedor horizontal para el nombre y el distintivo de clave -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvContactName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <!-- Indicador E2EE de Libsodium -->
+            <ImageView
+                android:id="@+id/ivKeyBadge"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="6dp"
+                android:contentDescription="Clave pública disponible"
+                android:src="@android:drawable/ic_lock_lock"
+                android:visibility="gone"
+                app:tint="@color/green_accent" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvContactPhone"

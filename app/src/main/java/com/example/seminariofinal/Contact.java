@@ -1,4 +1,5 @@
 package com.example.seminariofinal;
+import com.goterl.lazysodium.utils.Key;
 
 public class Contact {
     private String name;
@@ -40,4 +41,12 @@ public class Contact {
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
     }
+
+public Key getSodiumPublicKey() {
+    if (publicKey != null && !publicKey.trim().isEmpty()) {
+        return Key.fromHexString(publicKey);
+    }
+    return null;
+}
+
 }

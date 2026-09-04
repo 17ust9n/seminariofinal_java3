@@ -4,6 +4,12 @@ import android.annotation.SuppressLint;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+
+import com.goterl.lazysodium.LazySodiumAndroid;
+import com.goterl.lazysodium.SodiumAndroid;
+import com.goterl.lazysodium.interfaces.SecretBox;
+import com.goterl.lazysodium.utils.Key;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,6 +25,28 @@ public class AudioRecorderHelper {
     private boolean isRecording = false;
     private Thread recordingThread = null;
     private int bufferSize;
+
+    // Instancia de Libsodium
+    private LazySodiumAndroid lazySodium;
+
+    public AudioRecorderHelper() {
+        // Inicializar Libsodium
+        this.lazySodium = new LazySodiumAndroid(new SodiumAndroid());
+    }
+
+    /**
+     * Genera una clave simétrica de 256 bits para XSalsa20-Poly1305.
+     */
+    public Key generateSecretKey() {
+        return lazySodium.cryptoSecretBoxKeygen();
+    }
+
+    /**
+     * Genera un Nonce aleatorio de 24 bytes exigido por SecretBox.
+     */
+    public byte[] generateNonce() {
+        return lazySodium.randomBytesBuf(SecretBox.NONCEBYTES);
+    }
 
     @SuppressLint("MissingPermission")
     public void startRecording(String outputWavPath) {
@@ -60,7 +88,10 @@ public class AudioRecorderHelper {
         }
     }
 
-    public void stopRecording(String outputWavPath) {
+    /**
+     * Detiene la grabación, genera el WAV y opcionalmente lo cifra.
+     */
+    public void stopRecording(String outputWavPath, Key key, byte[] nonce, String outputEncryptedPath) {
         if (audioRecord != null) {
             isRecording = false; // 1. Detiene el bucle de escritura
 
@@ -80,7 +111,64 @@ public class AudioRecorderHelper {
             String rawPcmPath = outputWavPath + ".raw";
             copyWaveFile(rawPcmPath, outputWavPath); // 3. Genera la cabecera WAV correctamente
             new File(rawPcmPath).delete(); // 4. Elimina el archivo RAW temporal
+
+            // 5. Cifra el archivo WAV si se pasaron las claves necesarias
+            if (key != null && nonce != null && outputEncryptedPath != null) {
+                encryptFile(outputWavPath, outputEncryptedPath, key, nonce);
+                new File(outputWavPath).delete(); // Elimina el WAV sin cifrar por seguridad
+            }
         }
+    }
+
+    /**
+     * Cifra un archivo en disco usando Libsodium (crypto_secretbox_easy).
+     */
+    private void encryptFile(String inputFilePath, String outputFilePath, Key key, byte[] nonce) {
+        File inputFile = new File(inputFilePath);
+        byte[] fileBytes = new byte[(int) inputFile.length()];
+
+        try (FileInputStream fis = new FileInputStream(inputFile);
+             FileOutputStream fos = new FileOutputStream(outputFilePath)) {
+
+            fis.read(fileBytes);
+
+            // Cifrado simétrico autenticado
+            byte[] cipherText = new byte[fileBytes.length + SecretBox.MACBYTES];
+            boolean success = lazySodium.cryptoSecretBoxEasy(cipherText, fileBytes, fileBytes.length, nonce, key.getAsBytes());
+
+            if (success) {
+                fos.write(cipherText);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Descifra un archivo guardado con Libsodium de vuelta a un WAV reproducible.
+     */
+    public boolean decryptFile(String encryptedFilePath, String outputWavPath, Key key, byte[] nonce) {
+        File inputFile = new File(encryptedFilePath);
+        byte[] cipherText = new byte[(int) inputFile.length()];
+
+        try (FileInputStream fis = new FileInputStream(inputFile);
+             FileOutputStream fos = new FileOutputStream(outputWavPath)) {
+
+            fis.read(cipherText);
+
+            byte[] decryptedText = new byte[cipherText.length - SecretBox.MACBYTES];
+            boolean success = lazySodium.cryptoSecretBoxOpenEasy(decryptedText, cipherText, cipherText.length, nonce, key.getAsBytes());
+
+            if (success) {
+                fos.write(decryptedText);
+                return true;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void copyWaveFile(String inFilename, String outFilename) {

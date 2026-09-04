@@ -2,14 +2,20 @@ package com.example.seminariofinal;
 
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.goterl.lazysodium.utils.Key;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,58 +27,45 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onDownloadAudio(Message message);
     }
 
-    // Identificadores de Layout según Tipo + Emisor
-    private static final int VIEW_TYPE_TEXT_SENT = 1;
-    private static final int VIEW_TYPE_TEXT_RECEIVED = 2;
-    private static final int VIEW_TYPE_AUDIO_SENT = 3;
-    private static final int VIEW_TYPE_AUDIO_RECEIVED = 4;
+    private static final int VIEW_TYPE_TEXT = 1;
+    private static final int VIEW_TYPE_AUDIO = 2;
 
     private List<Message> messageList;
     private final OnMessageActionListener listener;
     private MediaPlayer mediaPlayer;
     private int currentlyPlayingPosition = -1;
 
+    // Helper y Clave para descifrado de audios cifrados
+    private AudioRecorderHelper audioHelper;
+    private Key sessionKey;
+    private String currentTempDecryptedPath = null;
+
     public MessageAdapter(List<Message> messageList, OnMessageActionListener listener) {
         this.messageList = messageList != null ? messageList : new ArrayList<>();
         this.listener = listener;
+        this.audioHelper = new AudioRecorderHelper();
+    }
+
+    public void setSessionKey(Key sessionKey) {
+        this.sessionKey = sessionKey;
     }
 
     @Override
     public int getItemViewType(int position) {
         Message msg = messageList.get(position);
-        if (msg.getType() == Message.TYPE_AUDIO) {
-            return msg.isSentByMe() ? VIEW_TYPE_AUDIO_SENT : VIEW_TYPE_AUDIO_RECEIVED;
-        } else {
-            return msg.isSentByMe() ? VIEW_TYPE_TEXT_SENT : VIEW_TYPE_TEXT_RECEIVED;
-        }
+        return (msg.getType() == Message.TYPE_AUDIO) ? VIEW_TYPE_AUDIO : VIEW_TYPE_TEXT;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view;
-
-        switch (viewType) {
-            case VIEW_TYPE_TEXT_SENT:
-                view = inflater.inflate(R.layout.item_message_text_sent, parent, false);
-                return new TextViewHolder(view);
-
-            case VIEW_TYPE_TEXT_RECEIVED:
-                view = inflater.inflate(R.layout.item_message_text_received, parent, false);
-                return new TextViewHolder(view);
-
-            case VIEW_TYPE_AUDIO_SENT:
-                view = inflater.inflate(R.layout.item_message_audio_sent, parent, false);
-                return new AudioViewHolder(view);
-
-            case VIEW_TYPE_AUDIO_RECEIVED:
-                view = inflater.inflate(R.layout.item_message_audio_received, parent, false);
-                return new AudioViewHolder(view);
-
-            default:
-                view = inflater.inflate(R.layout.item_message_text_sent, parent, false);
-                return new TextViewHolder(view);
+        if (viewType == VIEW_TYPE_AUDIO) {
+            View view = inflater.inflate(R.layout.item_message_audio, parent, false);
+            return new AudioViewHolder(view);
+        } else {
+            View view = inflater.inflate(R.layout.item_message_text, parent, false);
+            return new TextViewHolder(view);
         }
     }
 
@@ -84,6 +77,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             TextViewHolder textHolder = (TextViewHolder) holder;
             textHolder.tvMessageText.setText(message.getText());
 
+            // Alinear a la derecha si es enviado, a la izquierda si es recibido
+            LinearLayout rootLayout = (LinearLayout) holder.itemView;
+            rootLayout.setGravity(message.isSentByMe() ? Gravity.END : Gravity.START);
+
             if (textHolder.btnDeleteMessage != null) {
                 textHolder.btnDeleteMessage.setOnClickListener(v -> {
                     if (listener != null) listener.onDeleteMessage(message, holder.getAdapterPosition());
@@ -92,11 +89,16 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         } else if (holder instanceof AudioViewHolder) {
             AudioViewHolder audioHolder = (AudioViewHolder) holder;
+
+            // Alinear a la derecha si es enviado, a la izquierda si es recibido
+            LinearLayout rootLayout = (LinearLayout) holder.itemView;
+            rootLayout.setGravity(message.isSentByMe() ? Gravity.END : Gravity.START);
+
             boolean isPlaying = (currentlyPlayingPosition == position);
             audioHolder.btnPlayAudio.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 
             audioHolder.btnPlayAudio.setOnClickListener(v ->
-                    playAudio(holder.itemView, message.getAudioPath(), holder.getAdapterPosition())
+                    playAudio(holder.itemView, message, holder.getAdapterPosition())
             );
 
             if (audioHolder.btnDownloadAudio != null) {
@@ -113,22 +115,41 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-    private void playAudio(View itemView, String audioPath, int position) {
+    private void playAudio(View itemView, Message message, int position) {
+        String audioPath = message.getAudioPath();
+
         if (audioPath == null || audioPath.isEmpty()) {
             Toast.makeText(itemView.getContext(), "Archivo de audio no válido", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (mediaPlayer != null) {
-            if (mediaPlayer.isPlaying()) mediaPlayer.stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
+        stopAndCleanPlayer();
 
-            int lastPos = currentlyPlayingPosition;
+        if (currentlyPlayingPosition == position) {
             currentlyPlayingPosition = -1;
-            if (lastPos != -1) notifyItemChanged(lastPos);
+            notifyItemChanged(position);
+            return;
+        }
 
-            if (lastPos == position) return; // Si era el mismo, solo lo pausas
+        String pathToPlay = audioPath;
+
+        if (message.isEncrypted() || audioPath.endsWith(".enc")) {
+            if (sessionKey == null || message.getNonce() == null) {
+                Toast.makeText(itemView.getContext(), "No se puede descifrar el audio (Falta clave/nonce)", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            File tempFile = new File(itemView.getContext().getCacheDir(), "temp_play_" + System.currentTimeMillis() + ".wav");
+            currentTempDecryptedPath = tempFile.getAbsolutePath();
+
+            boolean success = audioHelper.decryptFile(audioPath, currentTempDecryptedPath, sessionKey, message.getNonce());
+            if (!success) {
+                Toast.makeText(itemView.getContext(), "Error al descifrar el archivo de audio", Toast.LENGTH_SHORT).show();
+                cleanTempFile();
+                return;
+            }
+
+            pathToPlay = currentTempDecryptedPath;
         }
 
         try {
@@ -140,7 +161,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                             .build()
             );
 
-            mediaPlayer.setDataSource(audioPath);
+            mediaPlayer.setDataSource(pathToPlay);
             mediaPlayer.prepare();
             mediaPlayer.start();
 
@@ -148,8 +169,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             notifyItemChanged(position);
 
             mediaPlayer.setOnCompletionListener(mp -> {
-                mp.release();
-                mediaPlayer = null;
+                stopAndCleanPlayer();
                 int completedPos = currentlyPlayingPosition;
                 currentlyPlayingPosition = -1;
                 if (completedPos != -1) notifyItemChanged(completedPos);
@@ -158,17 +178,32 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(itemView.getContext(), "Error al reproducir el audio", Toast.LENGTH_SHORT).show();
+            stopAndCleanPlayer();
         }
     }
 
-    // Método crucial para llamar desde el onDestroy/onStop de ChatActivity y liberar memoria
-    public void releaseMediaPlayer() {
+    private void stopAndCleanPlayer() {
         if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
-            currentlyPlayingPosition = -1;
         }
+        cleanTempFile();
+    }
+
+    private void cleanTempFile() {
+        if (currentTempDecryptedPath != null) {
+            File file = new File(currentTempDecryptedPath);
+            if (file.exists()) {
+                file.delete();
+            }
+            currentTempDecryptedPath = null;
+        }
+    }
+
+    public void releaseMediaPlayer() {
+        stopAndCleanPlayer();
+        currentlyPlayingPosition = -1;
     }
 
     @Override

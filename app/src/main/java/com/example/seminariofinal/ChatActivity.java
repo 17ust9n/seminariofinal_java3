@@ -5,6 +5,7 @@ import com.goterl.lazysodium.interfaces.Box;
 import com.goterl.lazysodium.utils.Key;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,10 +24,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.goterl.lazysodium.LazySodiumAndroid;
-import com.goterl.lazysodium.utils.Key;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,7 +41,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
-    private ImageButton btnBack, btnMic;
+    private ImageButton btnBack;
+    private FloatingActionButton btnMic;
     private TextView tvChName, tvChSub;
     private EditText etTxt;
     private RecyclerView rvMessages;
@@ -94,7 +96,7 @@ public class ChatActivity extends AppCompatActivity {
             );
 
             mySecretKeyHex = securePrefs.getString("secret_key", "");
-            myPublicKeyHex = securePrefs.getString("public_key", ""); // Necesaria para operaciones locales
+            myPublicKeyHex = securePrefs.getString("public_key", "");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -119,6 +121,9 @@ public class ChatActivity extends AppCompatActivity {
         etTxt = findViewById(R.id.txtInput);
         rvMessages = findViewById(R.id.chatRecyclerView);
 
+        // Icono inicial de micrófono
+        btnMic.setImageResource(android.R.drawable.ic_btn_speak_now);
+
         rvMessages.setLayoutManager(new LinearLayoutManager(this));
 
         messageAdapter = new MessageAdapter(messageList, new MessageAdapter.OnMessageActionListener() {
@@ -133,6 +138,44 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
         rvMessages.setAdapter(messageAdapter);
+    }
+
+    private void setupListeners() {
+        btnBack.setOnClickListener(v -> finish());
+
+        etTxt.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                send();
+                return true;
+            }
+            return false;
+        });
+
+        btnMic.setOnClickListener(v -> {
+            String text = etTxt.getText().toString().trim();
+            if (!text.isEmpty()) {
+                send();
+            } else {
+                toggleRec();
+            }
+        });
+
+        etTxt.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().length() > 0) {
+                    // Si hay texto, mostrar icono de envío
+                    btnMic.setImageResource(android.R.drawable.ic_menu_send);
+                } else {
+                    // Si el campo está vacío, volver al icono de micrófono
+                    btnMic.setImageResource(android.R.drawable.ic_btn_speak_now);
+                }
+            }
+
+            @Override public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void loadMessages() {
@@ -172,7 +215,6 @@ public class ChatActivity extends AppCompatActivity {
         List<Message> encryptedList = new ArrayList<>();
         for (Message msg : messageList) {
             if (msg.getType() == Message.TYPE_TEXT && msg.getText() != null) {
-                // Solo cifra el texto si aún no está cifrado en el modelo
                 String textToSave = isEncrypted(msg.getText()) ? msg.getText() : encryptText(msg.getText());
                 Message encMsg = new Message(msg.getId(), textToSave, msg.getAudioPath(), msg.getType(), msg.isSentByMe());
                 encryptedList.add(encMsg);
@@ -197,7 +239,6 @@ public class ChatActivity extends AppCompatActivity {
             Key recipientPubKey = Key.fromHexString(contactPublicKeyHex);
             Key myPrivKey = Key.fromHexString(mySecretKeyHex);
 
-            // Convertimos el mensaje a bytes para cryptoBoxEasy
             byte[] messageBytes = plainText.getBytes(java.nio.charset.StandardCharsets.UTF_8);
             byte[] cipherBytes = new byte[messageBytes.length + Box.SEALBYTES];
 
@@ -245,40 +286,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private boolean isEncrypted(String text) {
         return text != null && text.startsWith("ENC:");
-    }
-
-    private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-
-        etTxt.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_SEND) {
-                send();
-                return true;
-            }
-            return false;
-        });
-
-        btnMic.setOnClickListener(v -> {
-            String text = etTxt.getText().toString().trim();
-            if (!text.isEmpty()) {
-                send();
-            } else {
-                toggleRec();
-            }
-        });
-
-        etTxt.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().length() > 0) {
-                    btnMic.setImageResource(android.R.drawable.ic_menu_send);
-                } else {
-                    btnMic.setImageResource(android.R.drawable.ic_btn_speak_now);
-                }
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
     }
 
     private void send() {
@@ -344,26 +351,33 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void startRecording() {
-        // Guardar en el almacenamiento privado de la app para evitar que otras apps tengan acceso al audio
         audioFilePath = new File(getFilesDir(), UUID.randomUUID().toString() + ".wav").getAbsolutePath();
         recorderHelper.startRecording(audioFilePath);
         isRecording = true;
+        btnMic.setImageResource(android.R.drawable.ic_media_pause); // Cambia icono mientras graba
         Toast.makeText(this, "Grabando audio...", Toast.LENGTH_SHORT).show();
     }
 
     private void stopRecordingAndSend() {
         if (isRecording) {
-            recorderHelper.stopRecording(audioFilePath);
+            String encryptedPath = audioFilePath.replace(".wav", ".enc");
+
+            com.goterl.lazysodium.utils.Key key = recorderHelper.generateSecretKey();
+            byte[] nonce = recorderHelper.generateNonce();
+
+            recorderHelper.stopRecording(audioFilePath, key, nonce, encryptedPath);
             isRecording = false;
 
-            File audioFile = new File(audioFilePath);
-            if (audioFile.exists() && audioFile.length() > 44) {
-                Message message = new Message(UUID.randomUUID().toString(), null, audioFilePath, Message.TYPE_AUDIO, true);
+            btnMic.setImageResource(android.R.drawable.ic_btn_speak_now); // Restaura icono de micrófono
+
+            File encryptedFile = new File(encryptedPath);
+            if (encryptedFile.exists() && encryptedFile.length() > 0) {
+                Message message = new Message(UUID.randomUUID().toString(), null, encryptedPath, Message.TYPE_AUDIO, true);
                 messageAdapter.addMessage(message);
                 saveMessages();
                 rvMessages.scrollToPosition(messageList.size() - 1);
             } else {
-                Toast.makeText(this, "El audio grabado está vacío", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "El audio grabado está vacío o falló el cifrado", Toast.LENGTH_SHORT).show();
             }
         }
     }

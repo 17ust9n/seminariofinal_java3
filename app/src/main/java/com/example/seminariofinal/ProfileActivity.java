@@ -1,5 +1,7 @@
 package com.example.seminariofinal;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +16,8 @@ import androidx.security.crypto.MasterKey;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.goterl.lazysodium.LazySodiumAndroid;
+import com.goterl.lazysodium.utils.KeyPair;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -26,10 +30,16 @@ public class ProfileActivity extends AppCompatActivity {
     private Button btnLogout;
     private BottomNavigationView bottomNavigation;
 
+    private LazySodiumAndroid sodium;
+    private String myPublicKeyHex = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        // Uso de tu SodiumManager existente
+        sodium = SodiumManager.getInstance();
 
         initViews();
         loadUserData();
@@ -59,7 +69,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         tvUserName.setText(userPhone);
 
-        // 2. Leer Clave Pública cifrada para mostrar la identidad criptográfica si lo deseas
+        // 2. Leer o generar par de claves Curve25519 con Libsodium en EncryptedSharedPreferences
         try {
             MasterKey masterKey = new MasterKey.Builder(this)
                     .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -73,18 +83,48 @@ public class ProfileActivity extends AppCompatActivity {
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             );
 
-            String publicKey = securePrefs.getString("public_key", "No disponible");
+            myPublicKeyHex = securePrefs.getString("public_key", null);
+            String privateKeyHex = securePrefs.getString("private_key", null);
 
-            // Muestra el nivel de seguridad y una vista previa corta de la clave pública
-            String subtext = secLabel + "\nPK: " + (publicKey.length() > 12 ? publicKey.substring(0, 12) + "..." : publicKey);
+            // Generar par de claves con Libsodium si aún no existen
+            if (myPublicKeyHex == null || privateKeyHex == null) {
+                KeyPair keyPair = sodium.cryptoBoxKeypair();
+                myPublicKeyHex = keyPair.getPublicKey().getAsHexString();
+                privateKeyHex = keyPair.getSecretKey().getAsHexString();
+
+                securePrefs.edit()
+                        .putString("public_key", myPublicKeyHex)
+                        .putString("private_key", privateKeyHex)
+                        .apply();
+            }
+
+            // Formatear la vista previa de la clave pública
+            String shortKey = (myPublicKeyHex.length() > 16)
+                    ? myPublicKeyHex.substring(0, 8) + "..." + myPublicKeyHex.substring(myPublicKeyHex.length() - 8)
+                    : myPublicKeyHex;
+
+            String subtext = secLabel + "\nClave Pública (Toca para copiar):\n" + shortKey;
             tvUserEmail.setText(subtext);
 
         } catch (Exception e) {
-            tvUserEmail.setText(secLabel);
+            e.printStackTrace();
+            tvUserEmail.setText(secLabel + "\nError al cargar identidad Libsodium");
         }
     }
 
     private void setupListeners() {
+        // Permite al usuario copiar su clave pública al portapapeles
+        tvUserEmail.setOnClickListener(v -> {
+            if (myPublicKeyHex != null && !myPublicKeyHex.isEmpty()) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Clave Pública Libsodium", myPublicKeyHex);
+                if (clipboard != null) {
+                    clipboard.setPrimaryClip(clip);
+                    Toast.makeText(this, "¡Clave pública copiada al portapapeles!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         btnEditProfile.setOnClickListener(v -> {
             Toast.makeText(this, "Navegar a Editar Perfil", Toast.LENGTH_SHORT).show();
         });
@@ -111,11 +151,11 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void logoutUser() {
-        // 1. Limpiar preferencias de aplicación generales
+        // 1. Limpiar preferencias generales
         SharedPreferences preferences = getSharedPreferences("starssenger_prefs", Context.MODE_PRIVATE);
         preferences.edit().clear().apply();
 
-        // 2. Eliminar las claves criptográficas almacenadas en EncryptedSharedPreferences
+        // 2. Eliminar claves criptográficas guardadas
         try {
             MasterKey masterKey = new MasterKey.Builder(this)
                     .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -133,7 +173,7 @@ public class ProfileActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        // 3. Redirigir al Onboarding cerrando el stack de actividades
+        // 3. Redirigir al Onboarding
         Intent intent = new Intent(ProfileActivity.this, OnboardingActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

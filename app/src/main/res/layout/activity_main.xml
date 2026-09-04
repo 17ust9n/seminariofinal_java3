@@ -61,9 +61,9 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="20dp"
         android:contentDescription="Nuevo Chat"
-        android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/green_accent"
-        app:tint="@color/green_text" />
+        app:srcCompat="@drawable/ic_edit_pencil"
+        app:tint="@android:color/black" />
 
     <!-- Navegación inferior -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

@@ -21,6 +21,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -31,7 +33,7 @@ public class NewChatActivity extends AppCompatActivity {
 
     private MaterialToolbar toolbarNewChat;
     private EditText etNcSearch;
-    private Button btnAddContact, btnImportContacts, btnNewGroup;
+    private FloatingActionButton btnAddContact, btnImportContacts, btnNewGroup;
     private RecyclerView rvNcList;
 
     private List<Contact> contactList = new ArrayList<>();
@@ -65,7 +67,7 @@ public class NewChatActivity extends AppCompatActivity {
                 Intent intent = new Intent(NewChatActivity.this, ChatActivity.class);
                 intent.putExtra("contact_name", contact.getName());
                 intent.putExtra("contact_phone", contact.getPhone());
-                // Pasar la clave pública del contacto a ChatActivity
+                // Transmitir clave pública para la sesión E2EE Libsodium
                 intent.putExtra("contact_public_key", contact.getPublicKey());
                 startActivity(intent);
             }
@@ -155,12 +157,24 @@ public class NewChatActivity extends AppCompatActivity {
     private void openAddContactModal() {
         Dialog dialog = createStyledDialog(R.layout.dialog_add_contact);
 
+        TextView tvTitle = dialog.findViewById(R.id.tvDialogTitle);
+        if (tvTitle != null) {
+            tvTitle.setText("Nuevo contacto +");
+            tvTitle.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+        }
+
         EditText etCName = dialog.findViewById(R.id.etCName);
         EditText etCNum = dialog.findViewById(R.id.etCNum);
         EditText etCPublicKey = dialog.findViewById(R.id.etCPublicKey);
-        Button btnSave = dialog.findViewById(R.id.btnSaveContact);
+        MaterialButton btnSave = dialog.findViewById(R.id.btnSaveContact);
         Button btnCancel = dialog.findViewById(R.id.btnCancelContact);
         TextView tvCErr = dialog.findViewById(R.id.tvCErr);
+
+        if (btnSave != null) {
+            btnSave.setIconResource(R.drawable.ic_save);
+            btnSave.setIconTint(null);
+            btnSave.setIconPadding(12);
+        }
 
         btnCancel.setOnClickListener(v -> dialog.dismiss());
         btnSave.setOnClickListener(v -> {
@@ -170,6 +184,9 @@ public class NewChatActivity extends AppCompatActivity {
 
             if (name.isEmpty() || num.isEmpty()) {
                 tvCErr.setText("Completa nombre y número de teléfono");
+                tvCErr.setVisibility(View.VISIBLE);
+            } else if (!pubKey.isEmpty() && !isValidSodiumKey(pubKey)) {
+                tvCErr.setText("La clave pública Libsodium debe tener 64 caracteres Hex");
                 tvCErr.setVisibility(View.VISIBLE);
             } else {
                 saveContact(name, num, pubKey);
@@ -183,10 +200,17 @@ public class NewChatActivity extends AppCompatActivity {
     private void openEditContactModal(Contact contact) {
         Dialog dialog = createStyledDialog(R.layout.dialog_add_contact);
 
+        TextView tvTitle = dialog.findViewById(R.id.tvDialogTitle);
+        if (tvTitle != null) {
+            tvTitle.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_edit_pencil, 0, 0, 0);
+            tvTitle.setText("Modificar contacto");
+            tvTitle.setCompoundDrawablePadding(16);
+        }
+
         EditText etCName = dialog.findViewById(R.id.etCName);
         EditText etCNum = dialog.findViewById(R.id.etCNum);
         EditText etCPublicKey = dialog.findViewById(R.id.etCPublicKey);
-        Button btnSave = dialog.findViewById(R.id.btnSaveContact);
+        MaterialButton btnSave = dialog.findViewById(R.id.btnSaveContact);
         Button btnCancel = dialog.findViewById(R.id.btnCancelContact);
         TextView tvCErr = dialog.findViewById(R.id.tvCErr);
 
@@ -197,6 +221,12 @@ public class NewChatActivity extends AppCompatActivity {
         }
         btnSave.setText("Actualizar");
 
+        if (btnSave != null) {
+            btnSave.setIconResource(R.drawable.ic_save);
+            btnSave.setIconTint(null);
+            btnSave.setIconPadding(12);
+        }
+
         btnCancel.setOnClickListener(v -> dialog.dismiss());
         btnSave.setOnClickListener(v -> {
             String newName = etCName.getText().toString().trim();
@@ -205,6 +235,9 @@ public class NewChatActivity extends AppCompatActivity {
 
             if (newName.isEmpty() || newNum.isEmpty()) {
                 tvCErr.setText("Completa nombre y número de teléfono");
+                tvCErr.setVisibility(View.VISIBLE);
+            } else if (!newPubKey.isEmpty() && !isValidSodiumKey(newPubKey)) {
+                tvCErr.setText("La clave pública Libsodium debe tener 64 caracteres Hex");
                 tvCErr.setVisibility(View.VISIBLE);
             } else {
                 contact.setName(newName);
@@ -218,6 +251,12 @@ public class NewChatActivity extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    private boolean isValidSodiumKey(String keyHex) {
+        if (keyHex == null) return false;
+        String cleanKey = keyHex.trim();
+        return cleanKey.matches("^[0-9a-fA-F]{64}$");
     }
 
     private void confirmDeleteContact(Contact contact) {
@@ -270,7 +309,31 @@ public class NewChatActivity extends AppCompatActivity {
         renderNewChat(etNcSearch.getText().toString());
     }
 
-    private void saveGroup(String groupName) {}
+    private void saveGroup(String groupName) {
+        SharedPreferences prefs = getSharedPreferences("starssenger_prefs", MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        // 1. Cargar la lista existente de grupos almacenados
+        String jsonGroups = prefs.getString("groups_list", null);
+        List<Group> groupList;
+
+        if (jsonGroups != null) {
+            Type type = new TypeToken<ArrayList<Group>>() {}.getType();
+            groupList = gson.fromJson(jsonGroups, type);
+        } else {
+            groupList = new ArrayList<>();
+        }
+
+        // 2. Instanciar y añadir el nuevo objeto grupo
+        Group newGroup = new Group(groupName, new ArrayList<>());
+        groupList.add(newGroup);
+
+        // 3. Persistir la lista actualizada
+        String updatedJson = gson.toJson(groupList);
+        prefs.edit().putString("groups_list", updatedJson).apply();
+
+        Toast.makeText(this, "Grupo '" + groupName + "' creado exitosamente", Toast.LENGTH_SHORT).show();
+    }
 
     private void hideKeyboard() {
         View view = this.getCurrentFocus();

@@ -34,55 +34,114 @@
             android:textColorHint="@color/mut_text"
             android:textSize="14sp" />
 
+        <!-- Lista vertical de acciones circulares -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddContact"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:text="+ Nuevo"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                app:cornerRadius="8dp"
-                app:strokeColor="@color/line_border" />
+            <!-- Fila: Nuevo Contacto -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnImportContacts"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginHorizontal="2dp"
-                android:text="Importar"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                app:cornerRadius="8dp"
-                app:strokeColor="@color/line_border" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnAddContact"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="Nuevo contacto"
+                    app:backgroundTint="@color/green_accent"
+                    app:fabCustomSize="48dp"
+                    app:maxImageSize="24dp"
+                    app:shapeAppearanceOverlay="@style/CircleFAB"
+                    app:srcCompat="@android:drawable/ic_input_add"
+                    app:tint="@color/green_text" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnNewGroup"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:text="Grupo"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                app:cornerRadius="8dp"
-                app:strokeColor="@color/line_border" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Nuevo contacto"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Fila: Importar Contactos -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnImportContacts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="Importar contactos"
+                    app:backgroundTint="@color/green_accent"
+                    app:fabCustomSize="48dp"
+                    app:maxImageSize="24dp"
+                    app:shapeAppearanceOverlay="@style/CircleFAB"
+                    app:srcCompat="@drawable/ic_typewriter"
+                    app:tint="@color/green_text" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Importar contactos"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Fila: Nuevo Grupo -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnNewGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="Nuevo grupo"
+                    app:backgroundTint="@color/green_accent"
+                    app:fabCustomSize="48dp"
+                    app:maxImageSize="24dp"
+                    app:shapeAppearanceOverlay="@style/CircleFAB"
+                    app:srcCompat="@drawable/ic_group"
+                    app:tint="@color/green_text" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Nuevo grupo"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvNcList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 </LinearLayout>
