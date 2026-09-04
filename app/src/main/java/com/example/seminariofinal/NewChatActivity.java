@@ -52,11 +52,18 @@ public class NewChatActivity extends AppCompatActivity {
 
     private void initViews() {
         toolbarNewChat = findViewById(R.id.toolbarNewChat);
+
+        // AGREGAR ESTAS DOS LÍNEAS:
+        toolbarNewChat.setNavigationIcon(R.drawable.ic_arrow_back); // Icono que creaste
+        toolbarNewChat.setNavigationIconTint(getResources().getColor(R.color.green_accent, getTheme())); // Color verde
+
         etNcSearch = findViewById(R.id.etNcSearch);
         btnAddContact = findViewById(R.id.btnAddContact);
         btnImportContacts = findViewById(R.id.btnImportContacts);
         btnNewGroup = findViewById(R.id.btnNewGroup);
         rvNcList = findViewById(R.id.rvNcList);
+
+        // ... resto del código ...
 
         rvNcList.setLayoutManager(new LinearLayoutManager(this));
 
