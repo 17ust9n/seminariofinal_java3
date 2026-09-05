@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/navy"
+    tools:context=".TermsActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarTerms"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@color/navy"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/green_accent"
+        app:title="Términos y Condiciones"
+        app:titleTextColor="@color/white" />
+
+    <!-- Contenido Scrollable -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavigation"
+        android:layout_below="@id/toolbarTerms"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Última actualización -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="Última actualización: Septiembre 2026"
+                android:textColor="@color/mut_text"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <!-- Sección 1 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="1. Aceptación de los Términos"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Al acceder y utilizar Starssenger, aceptas cumplir con estos Términos y Condiciones de uso. Si no estás de acuerdo con alguno de ellos, te recomendamos no utilizar la aplicación."
+                android:textColor="@color/mut_text"
+                android:textSize="14sp" />
+
+            <!-- Sección 2 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="2. Privacidad y Seguridad"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Starssenger implementa cifrado para proteger tus comunicaciones y datos. Eres el único responsable del resguardo de tus claves privadas y del acceso seguro a tu dispositivo."
+                android:textColor="@color/mut_text"
+                android:textSize="14sp" />
+
+            <!-- Sección 3 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="3. Uso Aceptable"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Aceptas no utilizar la plataforma para actividades ilícitas, envío de spam o acciones que atenten contra la seguridad e integridad del servicio o de otros usuarios."
+                android:textColor="@color/mut_text"
+                android:textSize="14sp" />
+
+            <!-- Sección 4 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="4. Modificaciones al Servicio"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Nos reservamos el derecho de actualizar o cambiar estas condiciones en cualquier momento para adaptarnos a mejoras del servicio o regulaciones vigentes."
+                android:textColor="@color/mut_text"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

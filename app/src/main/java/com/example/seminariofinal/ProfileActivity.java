@@ -27,6 +27,8 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView tvUserEmail;
     private Button btnEditProfile;
     private Button btnSettings;
+    private Button btnTerms;
+    private Button btnAbout;
     private Button btnLogout;
     private BottomNavigationView bottomNavigation;
 
@@ -60,6 +62,8 @@ public class ProfileActivity extends AppCompatActivity {
         tvUserEmail = findViewById(R.id.tvUserEmail);
         btnEditProfile = findViewById(R.id.btnEditProfile);
         btnSettings = findViewById(R.id.btnSettings);
+        btnTerms = findViewById(R.id.btnTerms);
+        btnAbout = findViewById(R.id.btnAbout);
         btnLogout = findViewById(R.id.btnLogout);
         bottomNavigation = findViewById(R.id.bottomNavigation);
 
@@ -141,6 +145,18 @@ public class ProfileActivity extends AppCompatActivity {
         // Abrir la pantalla de Ajustes y Seguridad
         btnSettings.setOnClickListener(v -> {
             Intent intent = new Intent(ProfileActivity.this, SettingsActivity.class);
+            startActivity(intent);
+        });
+
+        // Abrir la pantalla de Términos y Condiciones
+        btnTerms.setOnClickListener(v -> {
+            Intent intent = new Intent(ProfileActivity.this, TermsActivity.class);
+            startActivity(intent);
+        });
+
+        // Abrir la pantalla de Acerca de
+        btnAbout.setOnClickListener(v -> {
+            Intent intent = new Intent(ProfileActivity.this, AboutActivity.class);
             startActivity(intent);
         });
 

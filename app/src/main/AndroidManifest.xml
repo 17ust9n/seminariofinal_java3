@@ -82,6 +82,18 @@
             android:exported="false"
             android:parentActivityName=".ProfileActivity" />
 
+        <!-- 9. ACERCA -->
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false"
+            android:parentActivityName=".AboutActivity" />
+
+        <!-- 10. TERMINOS Y CONDICIONES -->
+        <activity
+            android:name=".TermsActivity"
+            android:exported="false"
+            android:parentActivityName=".TermsActivity" />
+
     </application>
 
 </manifest>
